@@ -38,3 +38,16 @@ def list_pieces(
 ):
     rows = db.exec(select(Piece).where(Piece.owner_id == user.id).order_by(Piece.created_at.desc())).all()
     return [PieceOut(id=p.id, title=p.title, composer=p.composer, difficulty=p.difficulty, notes=p.notes) for p in rows]
+
+@router.delete("/{piece_id}")
+def delete_piece(
+    piece_id: int,
+    db: DBSession = Depends(get_db)
+) :
+    piece = db.query(Piece).filter(piece_id == Piece.id).first()
+    if not piece : 
+        raise HTTPException(status_code=404, detail="Not Found")
+    db.delete(piece)
+    db.commit()
+
+    return 

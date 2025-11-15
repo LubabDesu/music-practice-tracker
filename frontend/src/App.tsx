@@ -2,17 +2,11 @@ import { useEffect, useState } from "react";
 import { api } from "./api";
 import StatsPanel from "./components/StatsPanel";
 import LogSessionForm from "./components/LogSessionForm";
-import {
-    Page,
-    Card,
-    Grid,
-    TwoCol,
-    Row,
-    Input,
-    Button,
-    LogOutButton,
-} from "./ui";
+import { Page, Card, Grid, TwoCol, Button, LogOutButton } from "./ui";
 import "./App.css";
+import PiecesCard from "./components/PiecesCard";
+import AddPieceCard from "./components/AddPieceCard";
+import WelcomeCard from "./components/WelcomeCard";
 
 const BASE = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -25,7 +19,7 @@ type Me = {
     current_streak_days: number;
 };
 
-type Piece = { id: number; title: string; composer?: string | null };
+export type Piece = { id: number; title: string; composer?: string | null };
 
 export default function App() {
     const [me, setMe] = useState<Me | null>(null);
@@ -34,28 +28,39 @@ export default function App() {
     const [composer, setComposer] = useState("");
     const [status, setStatus] = useState("");
     const [refreshTick, setRefreshTick] = useState(0);
-    console.log(BASE);
+    async function handleDeletePiece(id: number) {
+        console.log("Deleting piece", id);
+        const ok = window.confirm(
+            "Are you sure you want to delete this piece? :( This cannot be undone."
+        );
+        if (!ok) return;
 
-    function bumpRefresh() {
-        load();
-        setRefreshTick((t) => t + 1);
+        await api(`/api/pieces/${id}`, { method: "DELETE" });
+
+        // Update UI immediately
+        setPieces((prev) => prev.filter((p) => p.id !== id));
     }
 
     async function load() {
         try {
             const m = await api<Me>("/api/me");
-            setMe(m);
             const p = await api<Piece[]>("/api/pieces");
+            setMe(m);
             setPieces(p);
+            setStatus("");
         } catch (e: any) {
             setMe(null);
-            setStatus(e.message);
+            setStatus(e.message || "Failed to load");
         }
     }
 
     useEffect(() => {
         load();
     }, []);
+
+    function bumpRefresh() {
+        setRefreshTick((t) => t + 1);
+    }
 
     async function addPiece(e: React.FormEvent) {
         e.preventDefault();
@@ -66,8 +71,8 @@ export default function App() {
         setTitle("");
         setComposer("");
         setStatus("Piece added");
-        setPieces((prev) => [newPiece, ...prev]);
-        await load();
+        setPieces((prev) => [newPiece, ...prev]); // 🔥 keep local state in sync
+        bumpRefresh();
     }
 
     return (
@@ -77,8 +82,8 @@ export default function App() {
                 background: "#111",
                 color: "#eaeaea",
                 display: "flex",
-                justifyContent: "center", // center horizontally
-                alignItems: "center", // or "center" to also center vertically
+                justifyContent: "center",
+                alignItems: "center",
             }}
         >
             <LogOutButton />
@@ -112,7 +117,6 @@ export default function App() {
                                         marginTop: "1rem",
                                     }}
                                 >
-                                    {" "}
                                     Join today.
                                 </p>
                                 <a href={`${BASE}/login`}>
@@ -125,17 +129,7 @@ export default function App() {
                             <TwoCol
                                 left={
                                     <div style={{ display: "grid", gap: 16 }}>
-                                        <Card
-                                            title={`Welcome${
-                                                me.display_name
-                                                    ? `, ${me.display_name}`
-                                                    : ""
-                                            }`}
-                                        >
-                                            <p>
-                                                <b>{me.email}</b>
-                                            </p>
-                                        </Card>
+                                        <WelcomeCard me={me} />
 
                                         <Card
                                             title="Your Stats"
@@ -149,76 +143,28 @@ export default function App() {
                                             <StatsPanel refresh={refreshTick} />
                                         </Card>
 
-                                        <Card title="Add a Piece">
-                                            <form onSubmit={addPiece}>
-                                                <Row>
-                                                    <Input
-                                                        placeholder="Title"
-                                                        value={title}
-                                                        onChange={(e) =>
-                                                            setTitle(
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        required
-                                                    />
-                                                    <Input
-                                                        placeholder="Composer"
-                                                        value={composer}
-                                                        onChange={(e) =>
-                                                            setComposer(
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                    <Button type="submit">
-                                                        Add
-                                                    </Button>
-                                                </Row>
-                                            </form>
-                                        </Card>
+                                        <AddPieceCard
+                                            title={title}
+                                            composer={composer}
+                                            onTitleChange={setTitle}
+                                            onComposerChange={setComposer}
+                                            onSubmit={addPiece}
+                                        />
 
                                         <Card title="Log a Session">
                                             <LogSessionForm
                                                 onSaved={bumpRefresh}
+                                                pieces={pieces}
                                             />
                                         </Card>
                                     </div>
                                 }
                                 right={
                                     <div style={{ display: "grid", gap: 16 }}>
-                                        <Card title="Your Pieces">
-                                            <ul
-                                                style={{
-                                                    margin: 0,
-                                                    paddingLeft: 18,
-                                                }}
-                                            >
-                                                {pieces.map((p) => (
-                                                    <li
-                                                        key={p.id}
-                                                        style={{
-                                                            margin: "6px 0",
-                                                        }}
-                                                    >
-                                                        <b>{p.title}</b>
-                                                        {p.composer
-                                                            ? ` — ${p.composer}`
-                                                            : ""}
-                                                    </li>
-                                                ))}
-                                                {pieces.length === 0 && (
-                                                    <p style={{ opacity: 0.7 }}>
-                                                        No pieces yet.
-                                                    </p>
-                                                )}
-                                            </ul>
-                                        </Card>
-
-                                        {/* Optional: recent sessions card if you added SessionsList */}
-                                        {/* <Card title="Recent Sessions">
-                  <SessionsList refresh={refreshTick}/>
-                </Card> */}
+                                        <PiecesCard
+                                            pieces={pieces}
+                                            onDelete={handleDeletePiece}
+                                        />
                                     </div>
                                 }
                             />

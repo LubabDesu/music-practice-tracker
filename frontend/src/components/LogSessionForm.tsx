@@ -1,10 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "../api";
 
 type Piece = { id: number; title: string; composer?: string | null };
 
-export default function LogSessionForm({ onSaved }: { onSaved: () => void }) {
-    const [pieces, setPieces] = useState<Piece[]>([]);
+export default function LogSessionForm({
+    onSaved,
+    pieces,
+}: {
+    onSaved: () => void;
+    pieces: Piece[];
+}) {
     const [pieceId, setPieceId] = useState<number | "">("");
     const [practiceDate, setPracticeDate] = useState<string>(() =>
         new Date().toISOString().slice(0, 10)
@@ -12,10 +17,6 @@ export default function LogSessionForm({ onSaved }: { onSaved: () => void }) {
     const [minutes, setMinutes] = useState<number>(30);
     const [focus, setFocus] = useState<string>("");
     const [notes, setNotes] = useState<string>("");
-
-    useEffect(() => {
-        api<Piece[]>("/api/pieces").then(setPieces);
-    }, []);
 
     async function submit(e: React.FormEvent) {
         e.preventDefault();

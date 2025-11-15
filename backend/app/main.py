@@ -1,5 +1,4 @@
 import os
-<<<<<<< HEAD
 from fastapi import FastAPI, APIRouter, Request, HTTPException, Depends
 from fastapi.responses import RedirectResponse, HTMLResponse
 from authlib.integrations.starlette_client import OAuth
@@ -47,7 +46,6 @@ def health_check():
 
 def get_user_name(request: Request):
     return request.cookies.get("user_name", "Guest")
-=======
 from dotenv import load_dotenv
 
 # 1) Load .env BEFORE importing modules that read env vars
@@ -97,13 +95,11 @@ def on_startup():
 # Optional: tiny root/index for manual testing
 def get_user_name(request: Request):
     return request.cookies.get("user_name", "Guest")  # demo only; not your JWT
->>>>>>> 6f5e26cf94564c6d10b2578652f06b921dc0220e
 
 @app.get("/", response_class=HTMLResponse)
 def home(user: str = Depends(get_user_name)):
     return f"""
     <html>
-<<<<<<< HEAD
         <head><title>FastAPI Google Auth Test</title></head>
         <body>
             <h1 style="color: blue; font-size: 24px">Hello, {user}!</h1>
@@ -127,15 +123,3 @@ def protected_page(user: str = Depends(get_user_name)):
 
 # https://accounts.google.com/signin/oauth/error?authError=Cg5pbnZhbGlkX2NsaWVudBIfVGhlIE9BdXRoIGNsaWVudCB3YXMgbm90IGZvdW5kLiCRAw%3D%3D&
 # client_id=None&flowName=GeneralOAuthFlow
-=======
-      <body>
-        <h1>Hello, {user}!</h1>
-        <a href="/login">Login with Google</a>
-      </body>
-    </html>
-    """
-
-@app.get("/api/health")
-def health_check():
-    return {"status": "ok"}
->>>>>>> 6f5e26cf94564c6d10b2578652f06b921dc0220e

@@ -23,7 +23,6 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
 COOKIE_NAME = os.getenv("COOKIE_NAME", "pt_session")
-<<<<<<< HEAD
 BASE_URL_BACKEND = "http://localhost:8000"
 BASE_URL_FRONTEND = "http://localhost:5173"
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
@@ -32,21 +31,6 @@ def frontend_url(path: str = "/") -> str:
     # ensure single slash join
     return FRONTEND_ORIGIN.rstrip("/") + "/" + path.lstrip("/")
 
-=======
-# BASE_URL_BACKEND = os.getenv("BACKEND_BASE_URL", "http://localhost:8000")
-BASE_URL_BACKEND = "https://practice-tracker.onrender.com"
-BASE_URL_FRONTEND = os.getenv("FRONTEND_BASE_URL","http://localhost:5173")
-FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
-
-#Debugging : 
-print("SECRET_KEY (first6):", os.getenv("SECRET_KEY")[:6])
-print("CLIENT_ID exists:", bool(os.getenv("GOOGLE_CLIENT_ID")))
-print("BACKEND_BASE_URL:", os.getenv("BACKEND_BASE_URL"))
-
-def frontend_url(path: str = "/") -> str:
-    # ensure single slash join
-    return FRONTEND_ORIGIN.rstrip("/") + "/" + path.lstrip("/")
->>>>>>> 6f5e26cf94564c6d10b2578652f06b921dc0220e
 # Register Google OAuth (OpenID Connect)
 oauth.register(
     name="google",
@@ -98,15 +82,9 @@ async def auth_callback(request: Request, db: DBSession = Depends(get_db)):
         key=COOKIE_NAME,
         value=session_jwt,
         httponly=True,
-<<<<<<< HEAD
         secure=False,  # set True in production with HTTPS
         samesite="lax",
         max_age=60 * 60 * 4,
-=======
-        secure=True,          # prod over HTTPS
-        samesite="none",      # needed for cross-site fetch
-        max_age=60*60*4,
->>>>>>> 6f5e26cf94564c6d10b2578652f06b921dc0220e
         path="/",
     )
     
