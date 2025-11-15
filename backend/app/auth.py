@@ -23,8 +23,16 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
 COOKIE_NAME = os.getenv("COOKIE_NAME", "pt_session")
-BASE_URL_BACKEND = "http://localhost:8000"
-BASE_URL_FRONTEND = "http://localhost:5173"
+BASE_URL_BACKEND = os.getenv(
+    "BACKEND_ORIGIN",
+    "http://localhost:8000",  # default for local dev
+)
+
+FRONTEND_ORIGIN = os.getenv(
+    "FRONTEND_ORIGIN",
+    "http://localhost:5173",  # default for local dev
+)
+
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 
 def frontend_url(path: str = "/") -> str:
