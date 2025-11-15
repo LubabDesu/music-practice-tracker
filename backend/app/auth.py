@@ -99,7 +99,7 @@ async def auth_callback(request: Request, db: DBSession = Depends(get_db)):
         value=session_jwt,
         httponly=True,
         secure=True,  # set True in production with HTTPS
-        samesite="lax",
+        samesite=None,
         max_age=60 * 60 * 4,
         path="/",
     )
