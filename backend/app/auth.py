@@ -23,7 +23,7 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
 COOKIE_NAME = os.getenv("COOKIE_NAME", "pt_session")
-BASE_URL_BACKEND = os.getenv(
+BACKEND_ORIGIN = os.getenv(
     "BACKEND_ORIGIN",
     "http://localhost:8000",  # default for local dev
 )
@@ -33,11 +33,17 @@ FRONTEND_ORIGIN = os.getenv(
     "http://localhost:5173",  # default for local dev
 )
 
-FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+
+
+def backend_url(path: str = "/") -> str:
+    return BACKEND_ORIGIN.rstrip("/") + "/" + path.lstrip("/")
 
 def frontend_url(path: str = "/") -> str:
-    # ensure single slash join
     return FRONTEND_ORIGIN.rstrip("/") + "/" + path.lstrip("/")
+
+print("DEBUG BACKEND_ORIGIN =", BACKEND_ORIGIN)
+print("DEBUG FRONTEND_ORIGIN =", FRONTEND_ORIGIN)
+
 
 # Register Google OAuth (OpenID Connect)
 oauth.register(
@@ -54,12 +60,14 @@ def create_session_jwt(sub: str, minutes: int = 240) -> str:
 
 @router.get("/login")
 async def login(request: Request):
-    redirect_uri = f"{BASE_URL_BACKEND}/auth/callback"
+    print("Trying to login...")
+    redirect_uri = request.url_for("auth_callback")
+    print("USING REDIRECT_URI:", redirect_uri)
+    
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 @router.get("/auth/callback")
 async def auth_callback(request: Request, db: DBSession = Depends(get_db)):
-
     
     token = await oauth.google.authorize_access_token(request)
     next_path = "/"
@@ -90,7 +98,7 @@ async def auth_callback(request: Request, db: DBSession = Depends(get_db)):
         key=COOKIE_NAME,
         value=session_jwt,
         httponly=True,
-        secure=False,  # set True in production with HTTPS
+        secure=True,  # set True in production with HTTPS
         samesite="lax",
         max_age=60 * 60 * 4,
         path="/",
@@ -106,7 +114,7 @@ async def auth_callback(request: Request, db: DBSession = Depends(get_db)):
 
 @router.get("/logout")
 async def logout():
-    resp = RedirectResponse(url=FRONTEND_ORIGIN)
+    resp = RedirectResponse(url=frontend_url("/"))
     resp.delete_cookie(
         key=os.getenv("COOKIE_NAME", "pt_session"),
         path="/",
