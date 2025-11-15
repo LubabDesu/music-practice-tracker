@@ -106,7 +106,7 @@ async def auth_callback(request: Request, db: DBSession = Depends(get_db)):
 
 @router.get("/logout")
 async def logout():
-    resp = RedirectResponse(url=BASE_URL_FRONTEND)
+    resp = RedirectResponse(url=FRONTEND_ORIGIN)
     resp.delete_cookie(
         key=os.getenv("COOKIE_NAME", "pt_session"),
         path="/",
