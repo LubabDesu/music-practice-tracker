@@ -9,56 +9,19 @@ from .auth import router
 from starlette.middleware.sessions import SessionMiddleware
 from .db import init_db
 from .routes import pieces, sessions, me, stats
-
-load_dotenv()
-
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-print("Google client id is : ", GOOGLE_CLIENT_ID)
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
-
-
-app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
-app.include_router(router)
-
-api_router = APIRouter(prefix="/api", tags=["auth"])
-app.include_router(api_router)
-app.include_router(pieces.router, prefix="/api")
-app.include_router(sessions.router, prefix="/api")
-app.include_router(me.router, prefix="/api")
-app.include_router(stats.router, prefix="/api")
-
-
-@app.on_event("startup")
-def on_startup() :
-    init_db()
-
-@api_router.get("/me") # Full path will be /api/me
-def get_user_data():
-    # ... logic to get user data from DB ...
-    return {"name": "Lucas", "email": "lucas@example.com"} # Returns JSON
-
-@app.get("/api/health")
-def health_check():
-    # It's good practice to have a simple health check endpoint
-    return {"status": "ok"}
-
-def get_user_name(request: Request):
-    return request.cookies.get("user_name", "Guest")
-from dotenv import load_dotenv
-
-# 1) Load .env BEFORE importing modules that read env vars
-load_dotenv()
-
-from fastapi import FastAPI, APIRouter, Request, Depends
-from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
-
 from .db import init_db
 from .auth import router as auth_router          # /login, /auth/callback, /logout
 from .routes import pieces, sessions, me, stats  # your real /api/* routers
+
+load_dotenv()
+
+
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+# print("Google client id is : ", GOOGLE_CLIENT_ID)
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
